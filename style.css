@@ -1,0 +1,34 @@
+#my-extension-window {
+    position: fixed;
+    top: 100px;
+    left: 100px;
+    width: 300px;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 999999;
+    font-family: sans-serif;
+}
+
+#my-extension-window .my-header {
+    background: #444;
+    color: white;
+    padding: 8px;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#my-extension-window .my-body {
+    padding: 10px;
+}
+
+#my-close-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
