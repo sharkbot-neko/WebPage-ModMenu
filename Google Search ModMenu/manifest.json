@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Google Search ModMenu",
+  "version": "1.0",
+  "description": "Google検索にModMenuを表示させる",
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["https://www.google.com/search*"],
+      "js": ["content.js"],
+      "css": ["style.css"]
+    }
+  ]
+}
