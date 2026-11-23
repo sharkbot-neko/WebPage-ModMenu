@@ -1,36 +1,99 @@
-(function() {
-    if (document.getElementById("my-extension-window")) return;
+class Menu {
+    menuId = "my-extension";
+    menu = null;
 
-    const win = document.createElement("div");
-    win.id = "my-extension-window";
-    win.innerHTML = `
-        <div class="my-header">
-            <span>🔧 拡張機能ウィンドウ</span>
-            <button id="my-close-btn">✖</button>
-        </div>
-        <div class="my-body">
-            <p>ここにいろいろ要素を追加できます。</p>
-        </div>
-    `;
+    title = "ModMenuFramework";
+    bodyElement = null;
 
-    document.body.appendChild(win);
+    openMenu() {
+        if (document.getElementById(this.menuId + "-window")) return;
 
-    document.getElementById("my-close-btn").onclick = () => {
-        win.remove();
-    };
+        this.menu = document.createElement("div");
 
-    const header = win.querySelector(".my-header");
-    let offsetX = 0, offsetY = 0, isDown = false;
+        this.menu.id = this.menuId + "-window";
+        this.menu.innerHTML = `
+            <div class="my-header">
+                <span>${this.title}</span>
+                <button id="${this.menuId}-close-btn">✖</button>
+            </div>
+            <div class="my-body" id="${this.menuId}_body">
+            </div>
+        `;
 
-    header.addEventListener("mousedown", e => {
-        isDown = true;
-        offsetX = e.clientX - win.offsetLeft;
-        offsetY = e.clientY - win.offsetTop;
-    });
-    document.addEventListener("mouseup", () => isDown = false);
-    document.addEventListener("mousemove", e => {
-        if (!isDown) return;
-        win.style.left = (e.clientX - offsetX) + "px";
-        win.style.top = (e.clientY - offsetY) + "px";
-    });
-})();
+        document.body.appendChild(this.menu);
+
+        document.getElementById(`${this.menuId}_body`).appendChild(this.bodyElement);
+
+        document.getElementById(`${this.menuId}-close-btn`).onclick = () => {
+            this.menu.remove();
+        };
+
+        const header = this.menu.querySelector(".my-header");
+        let offsetX = 0, offsetY = 0, isDown = false;
+
+        header.addEventListener("mousedown", e => {
+            isDown = true;
+            offsetX = e.clientX - this.menu.offsetLeft;
+            offsetY = e.clientY - this.menu.offsetTop;
+        });
+        document.addEventListener("mouseup", () => isDown = false);
+        document.addEventListener("mousemove", e => {
+            if (!isDown) return;
+            this.menu.style.left = (e.clientX - offsetX) + "px";
+            this.menu.style.top = (e.clientY - offsetY) + "px";
+        });
+    }
+
+    closeMenu() {
+        this.menu.remove();
+    }
+}
+
+class ModMenuFramework {
+    menus = new Map();
+
+    addMenu(menuId, menu) {
+        this.menus.set(menuId, menu);
+    }
+
+    getMenu(menuId) {
+        this.menus.get(menuId);
+    }
+
+    removeMenu(menuId) {
+        this.menus.remove(menuId);
+    }
+
+    openMenu(menuId) {
+        this.menus.get(menuId).openMenu();
+    }
+
+    setMainMenu(menu) {
+        this.menus.set("main", menu);
+    }
+
+    openMainMenu() {
+        this.menus.get("main").openMenu();
+    }
+}
+
+const modmenu = new ModMenuFramework();
+
+const mainMenu = new Menu();
+mainMenu.title = "サンプルModMenu";
+
+const bodyMainMenu = document.createElement("div");
+
+bodyMainMenu.innerHTML = `
+サンプルModMenuです。<br>
+HTML要素を追加できます。<br>
+<h1>h1</h1>
+<h2>h2</h2>
+<h3>h3</h3>
+`
+
+mainMenu.bodyElement = bodyMainMenu;
+
+modmenu.setMainMenu(mainMenu);
+
+modmenu.openMainMenu();
