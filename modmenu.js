@@ -5,6 +5,14 @@ class Menu {
     title = "ModMenuFramework";
     bodyElement = null;
 
+    onOpenMenu() {
+        return;
+    }
+
+    onCloseMenu() {
+        return;
+    }
+
     openMenu() {
         if (document.getElementById(this.menuId + "-window")) return;
 
@@ -12,11 +20,13 @@ class Menu {
 
         this.menu.id = this.menuId + "-window";
         this.menu.innerHTML = `
-            <div class="my-header">
-                <span>${this.title}</span>
-                <button id="${this.menuId}-close-btn">✖</button>
-            </div>
-            <div class="my-body" id="${this.menuId}_body">
+            <div class="my-window">
+                <div class="my-header" id="${this.menuId}-header">
+                    <span>${this.title}</span>
+                    <button id="${this.menuId}-close-btn" class="my-close-btn">✖</button>
+                </div>
+                <div class="my-body" id="${this.menuId}_body">
+                </div>
             </div>
         `;
 
@@ -25,27 +35,65 @@ class Menu {
         document.getElementById(`${this.menuId}_body`).appendChild(this.bodyElement);
 
         document.getElementById(`${this.menuId}-close-btn`).onclick = () => {
-            this.menu.remove();
+            this.closeMenu();
         };
 
-        const header = this.menu.querySelector(".my-header");
-        let offsetX = 0, offsetY = 0, isDown = false;
+        const header = document.getElementById(`${this.menuId}-header`);
+        const windowElement = this.menu.querySelector(".my-window");
 
-        header.addEventListener("mousedown", e => {
-            isDown = true;
-            offsetX = e.clientX - this.menu.offsetLeft;
-            offsetY = e.clientY - this.menu.offsetTop;
+        header.style.cursor = "grab";
+        header.style.touchAction = "none";
+
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        header.addEventListener("pointerdown", e => {
+            if (e.target.closest("button") || e.button !== 0) return;
+
+            const rect = windowElement.getBoundingClientRect();
+
+            windowElement.style.position = "fixed";
+            windowElement.style.left = `${rect.left}px`;
+            windowElement.style.top = `${rect.top}px`;
+            windowElement.style.right = "auto";
+            windowElement.style.bottom = "auto";
+            windowElement.style.margin = "0";
+            windowElement.style.transform = "none";
+
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            isDragging = true;
+
+            header.style.cursor = "grabbing";
+            header.setPointerCapture(e.pointerId);
+
+            e.preventDefault();
         });
-        document.addEventListener("mouseup", () => isDown = false);
-        document.addEventListener("mousemove", e => {
-            if (!isDown) return;
-            this.menu.style.left = (e.clientX - offsetX) + "px";
-            this.menu.style.top = (e.clientY - offsetY) + "px";
+
+        header.addEventListener("pointermove", e => {
+            if (!isDragging) return;
+
+            windowElement.style.left = `${e.clientX - offsetX}px`;
+            windowElement.style.top = `${e.clientY - offsetY}px`;
         });
+
+        const stopDragging = () => {
+            isDragging = false;
+            header.style.cursor = "grab";
+        };
+
+        header.addEventListener("pointerup", stopDragging);
+        header.addEventListener("pointercancel", stopDragging);
+        header.addEventListener("lostpointercapture", stopDragging);
+
+        this.onOpenMenu();
     }
 
     closeMenu() {
         this.menu.remove();
+        this.onCloseMenu();
     }
 }
 
@@ -57,11 +105,11 @@ class ModMenuFramework {
     }
 
     getMenu(menuId) {
-        this.menus.get(menuId);
+        return this.menus.get(menuId);
     }
 
     removeMenu(menuId) {
-        this.menus.remove(menuId);
+        this.menus.delete(menuId);
     }
 
     openMenu(menuId) {
