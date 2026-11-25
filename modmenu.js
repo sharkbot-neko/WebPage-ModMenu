@@ -88,7 +88,6 @@ class Menu {
         }
 
         const header = this.menu.querySelector(".my-header");
-        let offsetX = 0, offsetY = 0, isDown = false;
 
         header.style.cursor = "grab";
         header.style.touchAction = "none";
@@ -100,15 +99,15 @@ class Menu {
         header.addEventListener("pointerdown", e => {
             if (e.target.closest("button") || e.button !== 0) return;
 
-            const rect = windowElement.getBoundingClientRect();
+            const rect = this.menu.getBoundingClientRect();
 
-            windowElement.style.position = "fixed";
-            windowElement.style.left = `${rect.left}px`;
-            windowElement.style.top = `${rect.top}px`;
-            windowElement.style.right = "auto";
-            windowElement.style.bottom = "auto";
-            windowElement.style.margin = "0";
-            windowElement.style.transform = "none";
+            this.menu.style.position = "fixed";
+            this.menu.style.left = `${rect.left}px`;
+            this.menu.style.top = `${rect.top}px`;
+            this.menu.style.right = "auto";
+            this.menu.style.bottom = "auto";
+            this.menu.style.margin = "0";
+            this.menu.style.transform = "none";
 
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
@@ -124,8 +123,19 @@ class Menu {
         header.addEventListener("pointermove", e => {
             if (!isDragging) return;
 
-            windowElement.style.left = `${e.clientX - offsetX}px`;
-            windowElement.style.top = `${e.clientY - offsetY}px`;
+            this.menu.style.left = `${e.clientX - offsetX}px`;
+            this.menu.style.top = `${e.clientY - offsetY}px`;
+        });
+
+        header.addEventListener("pointerup", e => {
+            if (!isDragging) return;
+            isDragging = false;
+            try {
+                header.releasePointerCapture(e.pointerId);
+            } catch (err) {
+                // capture may already be released
+            }
+            header.style.cursor = "grab";
         });
 
         this.onOpenMenu();
