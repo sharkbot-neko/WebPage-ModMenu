@@ -57,7 +57,7 @@ class Menu {
         bodyEl.appendChild(this.bodyElement);
 
         document.getElementById(`${this.menuId}-close-btn`).onclick = () => {
-            this.menu.remove();
+            this.closeMenu();
         };
 
         const maxBtn = document.getElementById(`${this.menuId}-maximize-btn`);
@@ -90,16 +90,42 @@ class Menu {
         const header = this.menu.querySelector(".my-header");
         let offsetX = 0, offsetY = 0, isDown = false;
 
-        header.addEventListener("mousedown", e => {
-            isDown = true;
-            offsetX = e.clientX - this.menu.offsetLeft;
-            offsetY = e.clientY - this.menu.offsetTop;
+        header.style.cursor = "grab";
+        header.style.touchAction = "none";
+
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        header.addEventListener("pointerdown", e => {
+            if (e.target.closest("button") || e.button !== 0) return;
+
+            const rect = windowElement.getBoundingClientRect();
+
+            windowElement.style.position = "fixed";
+            windowElement.style.left = `${rect.left}px`;
+            windowElement.style.top = `${rect.top}px`;
+            windowElement.style.right = "auto";
+            windowElement.style.bottom = "auto";
+            windowElement.style.margin = "0";
+            windowElement.style.transform = "none";
+
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            isDragging = true;
+
+            header.style.cursor = "grabbing";
+            header.setPointerCapture(e.pointerId);
+
+            e.preventDefault();
         });
-        document.addEventListener("mouseup", () => isDown = false);
-        document.addEventListener("mousemove", e => {
-            if (!isDown) return;
-            this.menu.style.left = (e.clientX - offsetX) + "px";
-            this.menu.style.top = (e.clientY - offsetY) + "px";
+
+        header.addEventListener("pointermove", e => {
+            if (!isDragging) return;
+
+            windowElement.style.left = `${e.clientX - offsetX}px`;
+            windowElement.style.top = `${e.clientY - offsetY}px`;
         });
 
         this.onOpenMenu();
@@ -147,11 +173,11 @@ class ModMenuFramework {
     }
 
     getMenu(menuId) {
-        this.menus.get(menuId);
+        return this.menus.get(menuId);
     }
 
     removeMenu(menuId) {
-        this.menus.remove(menuId);
+        this.menus.delete(menuId);
     }
 
     openMenu(menuId) {
